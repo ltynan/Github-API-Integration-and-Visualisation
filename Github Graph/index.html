@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html">
+  <title>Github API Webapp using jQuery - A Visualisation</title>
+  <meta name="author" content="Luke Tynan">
+  <link rel="shortcut icon" href="http://d15dxvojnvxp1x.cloudfront.net/assets/favicon.ico">
+  <link rel="icon" href="http://d15dxvojnvxp1x.cloudfront.net/assets/favicon.ico">
+  <link rel="stylesheet" type="text/css" media="all" href="css/styles.css">
+  <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.2/d3.min.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="gradientPie.js"></script>
+</head>
+
+<body>
+  <div id="w">
+    <heading1>Github API Webapp</heading1>
+    <p>Enter a Github username below and click the button to display the users followers, who they follow and their repos</p>
+    
+    <input type="text" name="ghusername" id="ghusername" placeholder="Github username...">
+    
+    <a href="#" id="ghsubmitbtn">Pull Data</a>
+    
+    <div id="ghapidata" class="clearfix"></div>
+  </div>
+
+  <script type="text/javascript">
+$(function(){
+  $('#ghsubmitbtn').on('click', function(e){
+    e.preventDefault();
+    $('#ghapidata').html('<div id="loader"><img src="css/loader.gif" alt="loading..."></div>');
+    
+    var username = $('#ghusername').val();
+    var requri   = 'https://api.github.com/users/'+username;
+    var repouri  = 'https://api.github.com/users/'+username+'/repos';
+	var followersuri = 'https://api.github.com/users/'+username+'/followers';
+	var followinguri = 'https://api.github.com/users/'+username+'/following';
+    
+    requestJSON(requri, function(json) {
+      if(json.message == "Not Found" || username == '') {
+        $('#ghapidata').html("<heading2>No Info Found</heading2>");
+      }
+      
+      else {
+        // else we have a user and we display their info
+        var fullname   = json.name;
+        var username   = json.login;
+        var aviurl     = json.avatar_url;
+        var profileurl = json.html_url;
+        var location   = json.location;
+        var followersnum = json.followers;
+        var followingnum = json.following;
+        var reposnum     = json.public_repos;
+		var bio = json.bio;
+		
+		var statsArray =[followersnum, followingnum, reposnum];
+		pieChart(statsArray, fullname);
+        
+		if(fullname == undefined) { fullname = username; }
+        
+        var output = '<heading2>'+fullname+' <span class="smallname">(@<a href="'+profileurl+'" target="_blank">'+username+'</a>)</span></heading2>';
+        output = output + '<div class="ghcontent"><div class="avi"><a href="'+profileurl+'" target="_blank"><img src="'+aviurl+'" width="80" height="80" alt="'+username+'"></a></div>';
+        output = output +'<br>Followers: '+followersnum + ' - (Yellow)'+'<br>Following: '+followingnum+' - (Green)'+'<br>Repos: '+reposnum+' - (Purple)'+ '<br>Bio: '+bio+'</p></div>';
+        output = output + '<div class="repolist clearfix">';
+        
+        var repositories;
+        $.getJSON(repouri, function(json){
+          repositories = json;   
+          outputPageContent();                
+        });          
+        
+        function outputPageContent() {
+          if(repositories.length == 0) { output = output + '<p>No repos!</p></div>'; }
+          else {
+            output = output + '<p><strong>Repos List:</strong></p> <ul>';
+            $.each(repositories, function(index) {
+              output = output + repositories[index].name + '<br></a></li>';
+            });
+            output = output + '</ul></div>'; 
+          }
+          $('#ghapidata').html(output);
+        } // end outputPageContent()
+      } // end else statement
+    }); // end requestJSON Ajax call
+  }); // end click event handler
+  
+  function requestJSON(url, callback) {
+    $.ajax({
+      url: url,
+      complete: function(xhr) {
+        callback.call(null, xhr.responseJSON);
+      }
+    });
+  }
+  
+  function pieChart(statsArray, name){
+	var data = statsArray;
+	var followers = data[0];
+	var following = data[1];
+	var repos = data[2];
+	
+	var salesData=[
+		{label:"Folllowers",value: followers ,color:"#FF9900"},
+		{label:"Following",value: following ,color:"#109618"},
+		{label:"Repos",value: repos ,color:"#990099"}
+	];
+
+	var svg = d3.select("body").append("svg").attr("width", 700).attr("height", 400);
+
+
+	svg.append("g").attr("id","salespie");
+	
+	gradPie.draw("salespie", randomData(), 500, 200, 160);
+
+	function randomData(){
+		return salesData.map(function(d){ 
+			return {label:d.label, value:d.value, color:d.color};});
+	}
+}
+  
+});
+</script>
+
+</body>
+</html>
