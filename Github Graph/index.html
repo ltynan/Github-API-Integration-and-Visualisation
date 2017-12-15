@@ -15,8 +15,10 @@
 </head>
 
 <body>
+  
   <div id="w">
-    <heading1>Github API Webapp</heading1>
+    <heading1>Github API Visualisation Assignment</heading1>
+    
     <p>Enter a Github username below and click the button to display the users followers, who they follow and their repos</p>
     
     <input type="text" name="ghusername" id="ghusername" placeholder="Github username...">
@@ -24,7 +26,8 @@
     <a href="#" id="ghsubmitbtn">Pull Data</a>
     
     <div id="ghapidata" class="clearfix"></div>
-  </div>
+  
+    
 
   <script type="text/javascript">
 $(function(){
@@ -40,7 +43,7 @@ $(function(){
     
     requestJSON(requri, function(json) {
       if(json.message == "Not Found" || username == '') {
-        $('#ghapidata').html("<heading2>No Info Found</heading2>");
+        $('#ghapidata').html("<heading2>No Relating Info Found</heading2>");
       }
       
       else {
@@ -61,7 +64,7 @@ $(function(){
 		if(fullname == undefined) { fullname = username; }
         
         var output = '<heading2>'+fullname+' <span class="smallname">(@<a href="'+profileurl+'" target="_blank">'+username+'</a>)</span></heading2>';
-        output = output + '<div class="ghcontent"><div class="avi"><a href="'+profileurl+'" target="_blank"><img src="'+aviurl+'" width="80" height="80" alt="'+username+'"></a></div>';
+        output = output + '<div class="ghcontent"><div class="avi"><a href="'+profileurl+'" width="80" height="80" alt="'+username+'"></a></div>';
         output = output +'<br>Followers: '+followersnum + ' - (Yellow)'+'<br>Following: '+followingnum+' - (Green)'+'<br>Repos: '+reposnum+' - (Purple)'+ '<br>Bio: '+bio+'</p></div>';
         output = output + '<div class="repolist clearfix">';
         
@@ -96,32 +99,33 @@ $(function(){
   }
   
   function pieChart(statsArray, name){
-	var data = statsArray;
+    
+    var data = statsArray;
 	var followers = data[0];
 	var following = data[1];
 	var repos = data[2];
 	
 	var salesData=[
-		{label:"Folllowers",value: followers ,color:"#FF9900"},
-		{label:"Following",value: following ,color:"#109618"},
-		{label:"Repos",value: repos ,color:"#990099"}
+		{label:"Folllowers", labelColor : 'white',labelFontSize : '16', value: followers ,color:"#FF9900"},
+		{label:"Following", labelColor : 'white',labelFontSize : '16',value: following ,color:"#109618"},
+		{label:"Repos", labelColor : 'white',labelFontSize : '16',value: repos ,color:"#990099"}
 	];
 
 	var svg = d3.select("body").append("svg").attr("width", 700).attr("height", 400);
 
 
-	svg.append("g").attr("id","salespie");
+	svg.append("g").attr("id","statspie");
 	
-	gradPie.draw("salespie", randomData(), 500, 200, 160);
+	gradPie.draw("statspie", generateData(), 500, 200, 160);
 
-	function randomData(){
+	function generateData(){
 		return salesData.map(function(d){ 
-			return {label:d.label, value:d.value, color:d.color};});
+			return {label:d.label, labelColor:d.labelColor ,labelFontSize:d.labelFontSize ,value:d.value, color:d.color};});
 	}
 }
   
 });
 </script>
-
+</div>
 </body>
 </html>
